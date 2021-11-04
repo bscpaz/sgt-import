@@ -13,8 +13,12 @@ https://www.cnj.jus.br/sgt/versoes.php?tipo_tabela=M
 ```
 Issue: 
   "Could not change permissions of directory "/var/lib/postgresql/data": Operation not permitted"
-Solution: 
   
+Solution:
+  Change de volume declarion to "bind" type (not like "source:target"). 
+  e.g.:
+    volumes:
+    - type: bind
+      source: /mount/d/volume/Postgresql/sgt/data
+      target: /var/lib/postgresql/data
 ```
-
-
