@@ -15,7 +15,7 @@ Issue:
   "Could not change permissions of directory "/var/lib/postgresql/data": Operation not permitted"
   
 Solution:
-  Change de volume declarion to "bind" type (not like "source:target"). 
+  Use named volumes such like the following: 
   e.g.:
     (...)
     volumes:
