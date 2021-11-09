@@ -17,8 +17,10 @@ Issue:
 Solution:
   Change de volume declarion to "bind" type (not like "source:target"). 
   e.g.:
+    (...)
     volumes:
-    - type: bind
-      source: /mnt/d/volume/Postgresql/sgt/data
-      target: /var/lib/postgresql/data
+      - postgres:/mnt/d/volume/Postgresql/sgt/data
+    (...) 
+  volumes:
+    postgres:
 ```
