@@ -19,6 +19,6 @@ Solution:
   e.g.:
     volumes:
     - type: bind
-      source: /mount/d/volume/Postgresql/sgt/data
+      source: /mnt/d/volume/Postgresql/sgt/data
       target: /var/lib/postgresql/data
 ```
