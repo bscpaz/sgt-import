@@ -15,12 +15,6 @@ Issue:
   "Could not change permissions of directory "/var/lib/postgresql/data": Operation not permitted"
   
 Solution:
-  Use named volumes such like the following: 
-  e.g.:
-    (...)
-    volumes:
-      - postgres:/mnt/d/volume/Postgresql/sgt/data
-    (...) 
-  volumes:
-    postgres:
+  Do not map the volume pointing to a Windows path. Instead, map to a WSL2 directory, like /var/lib/docker/volumes.
+  e.g.: /var/lib/docker/volumes/postgresql/data
 ```
