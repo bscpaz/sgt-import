@@ -25,6 +25,6 @@ Issue:
   "failed to create LLB definition: rpc error"
   
 Solution:
-  
+  Docker desktop -> Settings -> Docker Engine -> Change the "features": { buildkit: true} to "features": { buildkit: false}.
 ```
 
