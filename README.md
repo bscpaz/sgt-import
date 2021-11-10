@@ -7,6 +7,9 @@
 ### SGT/CNJ file:
 https://www.cnj.jus.br/sgt/versoes.php?tipo_tabela=M
 
+### How to share the maven repository of a image with the container:
+
+
 <hr>
 <h4 align="center">Known issues</h4>
 
@@ -18,3 +21,13 @@ Solution:
   Do not map the volume pointing to a Windows path. Instead, map to a WSL2 directory, like /var/lib/docker/volumes.
   e.g.: /var/lib/docker/volumes/postgresql/data
 ```
+
+```
+Issue: 
+  "ERROR [internal] load metadata for docker.io/library/postgres:14.0-alpine ".
+  "failed to create LLB definition: rpc error"
+  
+Solution:
+  Docker desktop -> Settings -> Docker Engine -> Change the "features": { buildkit: true} to "features": { buildkit: false}.
+```
+
