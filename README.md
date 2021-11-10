@@ -7,8 +7,15 @@
 ### SGT/CNJ file:
 https://www.cnj.jus.br/sgt/versoes.php?tipo_tabela=M
 
-### How to share the maven repository of a image with the container:
-
+### How to change database password:
+```console
+bscpaz@2am:/$ docker exec -it sgt-db bash
+bash-5.1# su postgres
+/$ psql
+postgres=# \password postgres
+Enter new password: <new-password>
+postgres=# \q
+```
 
 <hr>
 <h4 align="center">Known issues</h4>
