@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
 
-  postgres:
-    container_name: postgres
+  sgt-db:
+    container_name: sgt-db
     build:
       context: postgresql
       dockerfile: Dockerfile
@@ -18,16 +18,18 @@ services:
     ports:
       - 5432:5432
 
-  # sgt-app:
-  #   container_name: sgt-app
-  #   build:
-  #     context: app
-  #     dockerfile: Dockerfile
-  #   image: bscpaz/sgt-app
-  #   networks:
-  #     - sgt-network
-  #   depends_on:
-  #     - postgres
+  sgt-app:
+    container_name: sgt-app
+    build:
+      context: app
+      dockerfile: Dockerfile
+    image: bscpaz/sgt-app
+    volumes:
+      - "$HOME/.m2:/root/.m2"
+    networks:
+      - sgt-network
+    depends_on:
+      - sgt-db
 
 networks:
   sgt-network:
