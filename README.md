@@ -22,6 +22,7 @@ Solution:
 ```
 Issue: 
   "ERROR [internal] load metadata for docker.io/library/postgres:14.0-alpine ".
+  "failed to create LLB definition: rpc error"
   
 Solution:
   
