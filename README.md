@@ -7,6 +7,9 @@
 ### SGT/CNJ file:
 https://www.cnj.jus.br/sgt/versoes.php?tipo_tabela=M
 
+### How to share the maven repository of a image with the container:
+
+
 <hr>
 <h4 align="center">Known issues</h4>
 
