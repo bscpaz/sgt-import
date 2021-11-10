@@ -18,3 +18,12 @@ Solution:
   Do not map the volume pointing to a Windows path. Instead, map to a WSL2 directory, like /var/lib/docker/volumes.
   e.g.: /var/lib/docker/volumes/postgresql/data
 ```
+
+```
+Issue: 
+  "ERROR [internal] load metadata for docker.io/library/postgres:14.0-alpine ".
+  
+Solution:
+  
+```
+
