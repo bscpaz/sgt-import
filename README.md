@@ -5,7 +5,7 @@
 <p>Create a Spring Boot project that reads a Excel file (SGT/CNJ) and import all data (e.g. motions data) into a Postgres database.</p>
 
 ### SGT/CNJ file:
-https://www.cnj.jus.br/sgt/versoes.php?tipo_tabela=M
+https://www.cnj.jus.br/sgt/versoes.php?tipo_tabela=A
 
 ### How to change database password:
 ```console
