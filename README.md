@@ -8,6 +8,7 @@
 https://www.cnj.jus.br/sgt/versoes.php?tipo_tabela=A
 
 ### How to change database password:
+Do the next procedments every time you recreate database volume.
 ```console
 bscpaz@2am:/$ docker exec -it sgt-db bash
 bash-5.1# su postgres
