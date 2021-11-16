@@ -5,9 +5,10 @@
 <p>Create a Spring Boot project that reads a Excel file (SGT/CNJ) and import all data (e.g. motions data) into a Postgres database.</p>
 
 ### SGT/CNJ file:
-https://www.cnj.jus.br/sgt/versoes.php?tipo_tabela=M
+https://www.cnj.jus.br/sgt/versoes.php?tipo_tabela=A
 
 ### How to change database password:
+Do the next procedments every time you recreate database volume.
 ```console
 bscpaz@2am:/$ docker exec -it sgt-db bash
 bash-5.1# su postgres
