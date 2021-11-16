@@ -2,8 +2,8 @@ spring:
   datasource:
     username: sgt
     password: sgt    
-    url: jdbc:postgresql://localhost:5432/sgt 
-    #url: jdbc:postgresql://sgt-db:5432/sgt
+    #url: jdbc:postgresql://localhost:5432/sgt 
+    url: jdbc:postgresql://sgt-db:5432/sgt
     driver-class-name: org.postgresql.Driver
   jpa:
     properties:
