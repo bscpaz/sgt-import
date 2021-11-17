@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import br.com.bscpaz.sgt.entities.Assunto;
 import br.com.bscpaz.sgt.repositories.AssuntoRepository;
 import br.com.bscpaz.sgt.utils.ExcelStructure;
+import br.com.bscpaz.sgt.vos.HierarchicalDescription;
 
 @Service
 public class AssuntoService {
@@ -32,7 +33,9 @@ public class AssuntoService {
 		try {
 			wb = new XSSFWorkbook(fis); //wb = new HSSFWorkbook(fis);
 			XSSFSheet sheet = wb.getSheetAt(0); //HSSFSheet sheet =  wb.getSheetAt(0);
-			Iterator<Row> rowIterator = sheet.iterator(); 
+			Iterator<Row> rowIterator = sheet.iterator();
+			HierarchicalDescription hierarchicalDescription = new HierarchicalDescription();
+			int assuntoArrayIndex = 0;
 
 			while (rowIterator.hasNext()) { 
 				Row row = rowIterator.next(); 
@@ -48,28 +51,31 @@ public class AssuntoService {
 				while (cellIterator.hasNext()) { 
 					String value = null;
 					Cell cell = cellIterator.next(); 
-					int columnIndex = cell.getColumnIndex();
+					int excelColumnIndex = cell.getColumnIndex();
 
 					switch (cell.getCellType()) {
 						case STRING:
 							value = cell.getStringCellValue();
 							break;
 						case NUMERIC:
-							value = String.valueOf(cell.getNumericCellValue());
+							value = getCodigoAsString(cell.getNumericCellValue());
 							break;
 						default:
 							break;
 					}
 
-					switch(columnIndex) {
+					switch(excelColumnIndex) {
 						case ExcelStructure.DESCRICAO_1_COLUMN:
 						case ExcelStructure.DESCRICAO_2_COLUMN:
 						case ExcelStructure.DESCRICAO_3_COLUMN:
 						case ExcelStructure.DESCRICAO_4_COLUMN:
 						case ExcelStructure.DESCRICAO_5_COLUMN:
-							if (assunto.getDescricao() == null && value != null && !value.trim().equals("")) {
+							if (assunto.getAssunto() == null && value != null && !value.trim().equals("")) {
 								//'Descricao' is spread amoung those all columns.
-								assunto.setDescricao(value);
+								assunto.setAssunto(value);
+								assuntoArrayIndex = excelColumnIndex;
+								//XSSFRichTextString richtextstring = cell.get
+								//boolean strikeOutStatus = cell.getCellStyle().get .get .get .get .getFont().getStrikeout();
 							}
 							break;
 
@@ -98,7 +104,14 @@ public class AssuntoService {
 							break;
 					}
 				}
+
+				if (assuntoArrayIndex == 0 && assunto.getCodigoSuperior() != null) {
+					assuntoArrayIndex++;
+				}
+				hierarchicalDescription.setValue(assuntoArrayIndex, assunto.getAssunto(), assunto.getCodigo());
+				assunto.setAssuntoCompleto(hierarchicalDescription.getValue());
 				this.repository.save(assunto);
+				System.out.println(assunto);
 			}
 		} catch (Exception e) {
 			System.out.println(String.format("\nERROR at line: %d", rowCount));
@@ -118,5 +131,9 @@ public class AssuntoService {
 		//It ignores the sheet header and rows with 'codigo' column blank
 		return rowCount < ExcelStructure.FIRST_ROW_OF_DATA || 
 			row.getCell(ExcelStructure.CODIGO_COLUMN).getNumericCellValue() == 0;
+	}
+
+	private String getCodigoAsString(double codigo) {
+		return String.valueOf(Math.round(codigo));
 	}
 }

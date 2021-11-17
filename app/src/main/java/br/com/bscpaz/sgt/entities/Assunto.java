@@ -19,7 +19,10 @@ public class Assunto {
 	private String codigoSuperior;
 
 	@Column(name = "ds_assunto_trf", nullable = false)
-	private String descricao;
+	private String assunto;
+
+	@Column(name = "ds_assunto_completo", nullable = false)
+	private String assuntoCompleto;
 
 	@Column(name = "ds_norma")
 	private String norma;
@@ -32,12 +35,15 @@ public class Assunto {
 
 	@Column(name = "ds_alteracoes")
 	private String alteracoes;	
-
-	@Column(name = "in_ativo")
-	private Boolean ativo = Boolean.TRUE;
-
+	
 	@Column(name = "in_riscado")
 	private Boolean riscado = Boolean.FALSE;
+
+	@Column(name = "in_possui_filhos")
+	private Boolean possuiFilhos = Boolean.FALSE;
+
+	@Column(name = "in_importado")
+	private Boolean importado = Boolean.FALSE;
 
 	public String getCodigo() {
 		return codigo;
@@ -55,12 +61,20 @@ public class Assunto {
 		this.codigoSuperior = codigoSuperior;
 	}
 
-	public String getDescricao() {
-		return descricao;
+	public String getAssunto() {
+		return assunto;
 	}
 
-	public void setDescricao(String descricao) {
-		this.descricao = descricao;
+	public void setAssunto(String assunto) {
+		this.assunto = assunto;
+	}
+
+	public String getAssuntoCompleto() {
+		return assuntoCompleto;
+	}
+
+	public void setAssuntoCompleto(String assuntoCompleto) {
+		this.assuntoCompleto = assuntoCompleto;
 	}
 
 	public String getNorma() {
@@ -95,20 +109,28 @@ public class Assunto {
 		this.alteracoes = alteracoes;
 	}
 
-	public Boolean getAtivo() {
-		return ativo;
-	}
-
-	public void setAtivo(Boolean ativo) {
-		this.ativo = ativo;
-	}
-
 	public Boolean getRiscado() {
 		return riscado;
 	}
 
 	public void setRiscado(Boolean riscado) {
 		this.riscado = riscado;
+	}
+
+	public Boolean getPossuiFilhos() {
+		return possuiFilhos;
+	}
+
+	public void setPossuiFilhos(Boolean possuiFilhos) {
+		this.possuiFilhos = possuiFilhos;
+	}
+
+	public Boolean getImportado() {
+		return importado;
+	}
+
+	public void setImportado(Boolean importado) {
+		this.importado = importado;
 	}
 
 	@Override
@@ -138,6 +160,7 @@ public class Assunto {
 
 	@Override
 	public String toString() {
-		return "Assunto [codigo=" + codigo + ", codigoSuperior=" + codigoSuperior + ", descricao=" + descricao + "]";
+		return "Assunto [assunto=" + assunto + ", assuntoCompleto=" + assuntoCompleto + ", codigo=" + codigo
+				+ ", codigoSuperior=" + codigoSuperior + "]";
 	}
 }

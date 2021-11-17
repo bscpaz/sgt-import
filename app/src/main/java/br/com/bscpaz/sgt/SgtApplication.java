@@ -17,6 +17,7 @@ public class SgtApplication {
 	private AssuntoService assuntoService;
 
 	public static void main(String[] args) {
+		System.out.println(String.format("\n\n\n\nProcessing '%s' file...", XLS_FILE_NAME));
 		SpringApplication.run(SgtApplication.class, args);
 		System.out.println("Mission accomplished!\nSELECT * FROM tb_assuntos;");
 	}
