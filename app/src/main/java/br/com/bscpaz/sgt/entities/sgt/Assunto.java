@@ -1,4 +1,4 @@
-package br.com.bscpaz.sgt.entities;
+package br.com.bscpaz.sgt.entities.sgt;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

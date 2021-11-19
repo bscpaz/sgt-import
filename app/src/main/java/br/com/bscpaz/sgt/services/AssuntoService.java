@@ -10,18 +10,22 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Transactional;
 
-import br.com.bscpaz.sgt.entities.Assunto;
-import br.com.bscpaz.sgt.repositories.AssuntoRepository;
+import br.com.bscpaz.sgt.entities.sgt.Assunto;
+import br.com.bscpaz.sgt.repositories.sgt.AssuntoRepository;
 import br.com.bscpaz.sgt.utils.ExcelStructure;
 import br.com.bscpaz.sgt.vos.HierarchicalDescription;
 
 @Service
+@EnableTransactionManagement
 public class AssuntoService {
 	
 	@Autowired
 	private AssuntoRepository repository;
 
+	@Transactional("sgtTransactionManager")
 	public void loadXSSExcelFileIntoDatabase(String xlsFile) {
 		this.repository.deleteAll();
 
@@ -29,6 +33,7 @@ public class AssuntoService {
 		InputStream fis = classloader.getResourceAsStream(xlsFile);
 		XSSFWorkbook wb = null; //HSSFWorkbook wb = null;
 		int rowCount = 0;
+		boolean isChildNode = false;
 
 		try {
 			wb = new XSSFWorkbook(fis); //wb = new HSSFWorkbook(fis);
@@ -74,8 +79,6 @@ public class AssuntoService {
 								//'Descricao' is spread amoung those all columns.
 								assunto.setAssunto(value);
 								assuntoArrayIndex = excelColumnIndex;
-								//XSSFRichTextString richtextstring = cell.get
-								//boolean strikeOutStatus = cell.getCellStyle().get .get .get .get .getFont().getStrikeout();
 							}
 							break;
 
@@ -84,7 +87,12 @@ public class AssuntoService {
 							break;
 						
 						case ExcelStructure.CODIGO_SUP_COLUMN:
-							assunto.setCodigoSuperior(value);
+							if (value != null) {
+								assunto.setCodigoSuperior(value);
+								isChildNode = true;
+							} else {
+								isChildNode = false;
+							}
 							break;
 
 						case ExcelStructure.NORMA_COLUMN:
@@ -105,7 +113,7 @@ public class AssuntoService {
 					}
 				}
 
-				if (assuntoArrayIndex == 0 && assunto.getCodigoSuperior() != null) {
+				if (isChildNode) {
 					assuntoArrayIndex++;
 				}
 				hierarchicalDescription.setValue(assuntoArrayIndex, assunto.getAssunto(), assunto.getCodigo());
