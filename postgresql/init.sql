@@ -27,3 +27,16 @@ GRANT INSERT ON TABLE public.tb_assuntos TO sgt;
 GRANT UPDATE ON TABLE public.tb_assuntos TO sgt;
 GRANT DELETE ON TABLE public.tb_assuntos TO sgt;
 GRANT TRUNCATE ON TABLE public.tb_assuntos TO sgt;
+
+CREATE TABLE IF NOT EXISTS public.tb_assuntos_avaliados (
+	cd_assunto_trf character varying(30) NOT NULL,
+	ds_assunto_trf character varying(200) NOT NULL,
+    ds_abrangencia character varying(200) NULL,
+	CONSTRAINT tb_assuntos_avaliados_pkey PRIMARY KEY (cd_assunto_trf)
+);
+
+GRANT SELECT ON TABLE public.tb_assuntos_avaliados TO sgt;
+GRANT INSERT ON TABLE public.tb_assuntos_avaliados TO sgt;
+GRANT UPDATE ON TABLE public.tb_assuntos_avaliados TO sgt;
+GRANT DELETE ON TABLE public.tb_assuntos_avaliados TO sgt;
+GRANT TRUNCATE ON TABLE public.tb_assuntos_avaliados TO sgt;

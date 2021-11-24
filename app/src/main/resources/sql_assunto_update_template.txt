@@ -1,0 +1,57 @@
+
+-- This updates all id_assunto_trf_superior FK that are null.
+
+CREATE OR REPLACE FUNCTION updateHierarchyOfAssuntos(v_query varchar) RETURNS void AS $$
+DECLARE
+    v_id_assunto_trf_father bigint;
+    v_cursor refcursor;
+    v_row record;
+BEGIN
+    OPEN v_cursor FOR EXECUTE v_query;
+    LOOP FETCH v_cursor INTO v_row;
+    EXIT WHEN NOT FOUND;
+		
+   		RAISE NOTICE 'Processing "Assunto" [%] with father [%]', 
+   			v_row.cd_assunto_trf, 
+   			v_row.cd_assunto_trf_superior;
+   
+   		IF (v_row.cd_assunto_trf_superior is not null) THEN
+   			SELECT id_assunto_trf INTO v_id_assunto_trf_father
+   			FROM client.tb_assunto_trf
+   			WHERE cd_assunto_trf = v_row.cd_assunto_trf_superior;
+   		
+	   		RAISE NOTICE 'Updating tb_assunto_trf [id = % (%)] with father [id = % (%)]...', 
+	   			v_row.id_assunto_trf,
+	   			v_row.cd_assunto_trf,
+   				v_id_assunto_trf_father,
+	   			v_row.cd_assunto_trf_superior;
+   		
+   			UPDATE client.tb_assunto_trf
+   			SET id_assunto_trf_superior = v_id_assunto_trf_father
+   			WHERE id_assunto_trf = v_row.id_assunto_trf;
+        END IF;
+    END LOOP;
+
+    CLOSE v_cursor;
+END
+$$
+LANGUAGE plpgsql VOLATILE;
+----------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION doUpdate() RETURNS void AS $$
+DECLARE
+    v_query varchar;
+
+BEGIN
+
+v_query := '
+${cd_assuntos}
+';
+PERFORM updateHierarchyOfAssuntos(v_query);
+
+END
+$$
+LANGUAGE plpgsql VOLATILE;
+----------------------------------------------------------------------
+SELECT doUpdate();
+DROP FUNCTION doUpdate();
+DROP FUNCTION updateHierarchyOfAssuntos(v_query varchar);

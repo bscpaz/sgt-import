@@ -5,8 +5,11 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import br.com.bscpaz.sgt.vos.AssuntoFields;
+import br.com.bscpaz.sgt.vos.Schema;
+
 @Entity
-@Table(name = Assunto.TABLE_NAME, schema = "public")
+@Table(name = Assunto.TABLE_NAME, schema = Schema.PUBLIC)
 public class Assunto {
 	
 	public static final String TABLE_NAME = "tb_assuntos";
@@ -160,7 +163,49 @@ public class Assunto {
 
 	@Override
 	public String toString() {
-		return "Assunto [assunto=" + assunto + ", assuntoCompleto=" + assuntoCompleto + ", codigo=" + codigo
-				+ ", codigoSuperior=" + codigoSuperior + "]";
+		return codigo + ";" + assunto + ";" + codigoSuperior + ";" + assuntoCompleto; 
 	}
+
+	public String getSqlStmt(String template, int valorPeso) {
+		template = template.replace(AssuntoFields.CODIGO, "'" + this.codigo + "'");
+
+		if (this.codigoSuperior == null) {
+			template = template.replace(AssuntoFields.CODIGO_SUP, "null");
+		} else {
+			template = template.replace(AssuntoFields.CODIGO_SUP, "'" + this.codigoSuperior + "'");
+		}
+
+		template = template.replace(AssuntoFields.ASSUNTO, "'" + this.assunto + "'");
+		template = template.replace(AssuntoFields.ASSUNTO_COMPLETO, "'" + this.assuntoCompleto + "'");
+		template = template.replace(AssuntoFields.VL_PESO, String.valueOf(valorPeso));
+
+		if (this.norma == null) {
+			template = template.replace(AssuntoFields.NORMA, "null");
+			template = template.replace(AssuntoFields.LEI, "null"); //LEI is the same as NORMA.
+		} else {
+			template = template.replace(AssuntoFields.NORMA, "'" + this.norma + "'");
+			template = template.replace(AssuntoFields.LEI, "'" + this.norma + "'"); //LEI is the same as NORMA.
+		}
+
+		template = template.replace(AssuntoFields.ARTIGO, "'" + this.artigo + "'");
+		template = template.replace(AssuntoFields.POSSUI_FILHOS, String.valueOf(this.possuiFilhos));
+		template = template.replace(AssuntoFields.ATIVO, "false");
+		template = template.replace(AssuntoFields.PSS, "false");
+		template = template.replace(AssuntoFields.EXIGE_NM, "false");
+		template = template.replace(AssuntoFields.EXIGE_ASSUNTOS_ANTECEDENTES, "false");
+		template = template.replace(AssuntoFields.PADRAO_SGT, "true");
+
+		if (this.glossario == null) {
+			template = template.replace(AssuntoFields.GLOSSARIO, "null");
+		} else {
+			template = template.replace(AssuntoFields.GLOSSARIO, "'" + this.glossario + "'");
+		}
+		template = template + "\n--=======================================================\n\n";
+		return template.toString();
+	}
+
+	public static String getCsvHeader() {
+		return "cod_assunto;assunto;cod_assunto_sup;assunto_completo";
+	}
+
 }

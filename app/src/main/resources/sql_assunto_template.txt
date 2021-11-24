@@ -1,0 +1,43 @@
+DO $$
+
+DECLARE
+  textoGrande TEXT;
+BEGIN
+  textoGrande := ${assuntoTrfGlossario};
+
+  INSERT INTO client.tb_assunto_trf (
+      cd_assunto_trf,
+      cd_assunto_trf_superior,
+	  ds_assunto_trf,
+	  ds_assunto_completo,
+	  vl_peso,
+	  ds_norma,
+	  ds_lei_artigo,
+	  ds_lei,
+	  ds_assunto_trf_glossario,
+	  in_possui_filhos,
+	  in_ativo,
+	  in_pss,
+	  in_exige_nm,
+	  in_crime_antecedente,
+	  in_padrao_sgt)
+  VALUES(
+      ${codAssuntoTrf},
+      ${codAssuntoTrfSuperior},
+	  ${assuntoTrf},
+	  ${assuntoCompleto},
+	  ${valorPeso},
+	  ${norma},
+	  ${leiArtigo},
+	  ${lei},
+	  textoGrande,
+	  ${possuiFilhos},
+	  ${ativo},
+	  ${pss},
+	  ${inExigeNM},
+	  ${exigeAssuntoAntecedente},
+	  ${padraoSgt}
+  );
+
+END;
+$$;

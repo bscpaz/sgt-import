@@ -10,8 +10,12 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Type;
+
+import br.com.bscpaz.sgt.vos.Schema;
+
 @Entity
-@Table(name = AssuntoTrf.TABLE_NAME, schema = "client")
+@Table(name = AssuntoTrf.TABLE_NAME, schema = Schema.CLIENT)
 public class AssuntoTrf {
 	
 	public static final String TABLE_NAME = "tb_assunto_trf";
@@ -35,6 +39,7 @@ public class AssuntoTrf {
 
 	@Lob
 	@Column(name = "ds_assunto_completo")
+	@Type(type = "org.hibernate.type.TextType")
 	@Basic(fetch=FetchType.LAZY)
 	private String assuntoCompleto;
 
@@ -46,16 +51,19 @@ public class AssuntoTrf {
 
 	@Lob
 	@Column(name = "ds_lei_artigo")
+	@Type(type = "org.hibernate.type.TextType")
 	@Basic(fetch=FetchType.LAZY)
 	private String leiArtigo;
 
 	@Lob
 	@Column(name = "ds_lei")
+	@Type(type = "org.hibernate.type.TextType")
 	@Basic(fetch=FetchType.LAZY)
 	private String lei;
 
 	@Lob
 	@Column(name = "ds_assunto_trf_glossario")
+	@Type(type = "org.hibernate.type.TextType")
 	@Basic(fetch = FetchType.LAZY)
 	private String assuntoTrfGlossario;
 
@@ -239,4 +247,10 @@ public class AssuntoTrf {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "AssuntoTrf [codAssuntoTrf=" + codAssuntoTrf + ", assuntoTrf=" + assuntoTrf + ", ativo=" + ativo + "]";
+	}
+
 }
