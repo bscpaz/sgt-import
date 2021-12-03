@@ -1,43 +1,49 @@
-DO $$
+  
+    RAISE NOTICE 'Processing %/% ...', ${current}, ${total};
 
-DECLARE
-  textoGrande TEXT;
-BEGIN
-  textoGrande := ${assuntoTrfGlossario};
+    v_glossario := ${assuntoTrfGlossario};
 
-  INSERT INTO client.tb_assunto_trf (
-      cd_assunto_trf,
-      cd_assunto_trf_superior,
-	  ds_assunto_trf,
-	  ds_assunto_completo,
-	  vl_peso,
-	  ds_norma,
-	  ds_lei_artigo,
-	  ds_lei,
-	  ds_assunto_trf_glossario,
-	  in_possui_filhos,
-	  in_ativo,
-	  in_pss,
-	  in_exige_nm,
-	  in_crime_antecedente,
-	  in_padrao_sgt)
-  VALUES(
-      ${codAssuntoTrf},
-      ${codAssuntoTrfSuperior},
-	  ${assuntoTrf},
-	  ${assuntoCompleto},
-	  ${valorPeso},
-	  ${norma},
-	  ${leiArtigo},
-	  ${lei},
-	  textoGrande,
-	  ${possuiFilhos},
-	  ${ativo},
-	  ${pss},
-	  ${inExigeNM},
-	  ${exigeAssuntoAntecedente},
-	  ${padraoSgt}
-  );
-
-END;
-$$;
+    INSERT INTO client.tb_assunto_trf (
+        cd_assunto_trf,
+        cd_assunto_trf_superior,
+        ds_assunto_trf,
+        ds_assunto_completo,
+        vl_peso,
+        ds_norma,
+        ds_lei_artigo,
+        ds_lei,
+        ds_assunto_trf_glossario,
+        in_padrao_sgt,
+        in_possui_filhos,
+        in_mantem_processo,
+        in_ignora_compensacao,
+        in_complementar,
+        in_segredo_justica,
+        in_crime_antecedente,
+        in_ativo,
+        in_ignora_prevencao,
+        in_exige_nm,
+        in_pss)
+    VALUES(
+        ${codAssuntoTrf},
+        ${codAssuntoTrfSuperior},
+        ${assuntoTrf},
+        ${assuntoCompleto},
+        v_peso,
+        ${norma},
+        ${leiArtigo},
+        ${lei},
+        v_glossario,
+        true,
+        false,
+        v_in_mantem_processo,
+        v_in_ignora_compensacao,
+        v_in_complementar,
+        v_in_segredo_justica,
+        v_in_crime_antecedente,
+        v_in_ativo,
+        v_in_ignora_prevencao,
+        v_in_exige_nm,
+        v_in_pss);
+    
+    COMMIT;

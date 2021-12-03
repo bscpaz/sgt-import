@@ -2,8 +2,8 @@ package br.com.bscpaz.sgt.services;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -20,8 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 import br.com.bscpaz.sgt.entities.pje.AssuntoTrf;
 import br.com.bscpaz.sgt.entities.sgt.Assunto;
 import br.com.bscpaz.sgt.entities.sgt.AssuntoAvaliado;
+import br.com.bscpaz.sgt.entities.sgt.AssuntoNaoAvaliado;
 import br.com.bscpaz.sgt.repositories.pje.AssuntoTrfRepository;
 import br.com.bscpaz.sgt.repositories.sgt.AssuntoAvaliadoRepository;
+import br.com.bscpaz.sgt.repositories.sgt.AssuntoNaoAvaliadoRepository;
 import br.com.bscpaz.sgt.repositories.sgt.AssuntoRepository;
 import br.com.bscpaz.sgt.utils.ExcelAvaliadoStructure;
 import br.com.bscpaz.sgt.utils.ExcelStructure;
@@ -36,12 +38,16 @@ import br.com.bscpaz.sgt.vos.ImportConfig;
 public class AssuntoService {
 
 	private List<AssuntoDecorator> newAssuntosToImport = new ArrayList<>();
+	private List<Assunto> newAssuntosToAnalysis = new ArrayList<>();
 
 	@Autowired
 	private AssuntoRepository assuntoRepository;
 
 	@Autowired
 	private AssuntoAvaliadoRepository assuntoAvaliadoRepository;
+
+	@Autowired
+	private AssuntoNaoAvaliadoRepository assuntoNaoAvaliadoRepository;
 
 	@Autowired
 	private AssuntoTrfRepository assuntoTrfRepository;
@@ -93,7 +99,7 @@ public class AssuntoService {
 
 					switch (cell.getCellType()) {
 						case STRING:
-							value = cell.getStringCellValue();
+							value = cell.getStringCellValue().trim();
 							break;
 						case NUMERIC:
 							value = getCodigoAsString(cell.getNumericCellValue());
@@ -151,6 +157,7 @@ public class AssuntoService {
 				}
 				hierarchicalDescription.setValue(assuntoArrayIndex, assunto.getAssunto(), assunto.getCodigo());
 				assunto.setAssuntoCompleto(hierarchicalDescription.getValue());
+				System.out.println(String.format("Importing assunto [%s]...", assunto.getCodigo()));
 				this.assuntoRepository.save(assunto);
 			}
 		} catch (Exception e) {
@@ -168,54 +175,55 @@ public class AssuntoService {
 	}
 
 	private void generateImportSqlFile(ImportConfig importConfig) {
-		//The default charset = UTF-8.
-		importConfig.setCharset(StandardCharsets.UTF_8);
-		importConfig.setSqlOutputFile(importConfig.getSqlOutputUtf8File());
-
-		createNewSqlFile(importConfig);
+		openBlockScript(importConfig);
 		generateAssuntoImportScripts(importConfig);
+		closeBlockScript(importConfig);
 		generateUpdateHierarchyScript(importConfig);
 		generateCommentedSelectScriptJustForCheck(importConfig);
-
-		isAllAssuntosIdentified = true;
-
-		if (importConfig.isToGenerateSqlIso88591()) {
-			importConfig.setCharset(StandardCharsets.ISO_8859_1);
-			importConfig.setSqlOutputFile(importConfig.getSqlOutputIsoFile());
-
-			createNewSqlFile(importConfig);
-			generateAssuntoImportScripts(importConfig);
-			generateUpdateHierarchyScript(importConfig);
-			generateCommentedSelectScriptJustForCheck(importConfig);
-		}
 	}
 
-	private void createNewSqlFile(ImportConfig importConfig) {
-		String header = "--This is a script to import new 'Assuntos' from CNJ's Excel.\n\n\n";
-		FileUtil.createFile(importConfig.getSqlOutputFile(), importConfig.getCharset(), header);
+	private void openBlockScript(ImportConfig importConfig) {
+		String headerTemplate = FileUtil.getFileContentFromResource("sql_assunto_template_header.txt", importConfig.getCharset());
+		int pesoValue =  getPesoValueField(importConfig);
+		headerTemplate = headerTemplate.replace(AssuntoFields.VL_PESO, String.valueOf(pesoValue));
+		FileUtil.createFile(importConfig.getSqlOutputFile(), importConfig.getCharset(), headerTemplate);
 	}
 
 	private void generateAssuntoImportScripts(ImportConfig importConfig) {
-		String template = FileUtil.getFileContentFromResource("sql_assunto_template.txt", importConfig.getCharset());
-		List<Assunto> assuntosFomTempDb = assuntoRepository.findAll();
-		int pesoValue =  getPesoValueField(importConfig);
-
 		if (isAllAssuntosIdentified) {
+			String template = FileUtil.getFileContentFromResource("sql_assunto_template.txt", importConfig.getCharset());
+			int current = 1;
+
 			for (AssuntoDecorator assunto : newAssuntosToImport) {
-				String sqlStmt = assunto.getSqlStmt(template, pesoValue);
-				FileUtil.wrieteIntoFile(importConfig.getSqlOutputFile(), importConfig.getCharset(), sqlStmt.toString());
+				System.out.println(String.format("adding assunto [%s] into file...", assunto.getCodigo()));
+				String sqlStmt = assunto.getSqlStmt(template, current, newAssuntosToImport.size());
+				FileUtil.writeIntoFile(importConfig.getSqlOutputFile(), importConfig.getCharset(), sqlStmt.toString());
+				current++;
 			}
 		} else {
-			for (Assunto assunto : assuntosFomTempDb) {
-				Optional<AssuntoTrf> assuntoTrf = assuntoTrfRepository.findFirstByCodAssuntoTrf(assunto.getCodigo());
-	
-				if (!assuntoTrf.isPresent()) {
-					//Add only if the "Assunto" is not in offical database.
-					newAssuntosToImport.add(new AssuntoDecorator(assunto));
-					String sqlStmt = assunto.getSqlStmt(template, pesoValue);
-					FileUtil.wrieteIntoFile(importConfig.getSqlOutputFile(), importConfig.getCharset(), sqlStmt.toString());
+			List<Assunto> assuntosFomTempDb = assuntoRepository.findAll();
+
+			if (importConfig.isToUseArrayFileAsInput()) {
+				List<String> assuntosCode =	getArrayOfCodesAsInput(importConfig);
+				System.out.println(String.format("Total found in array_filter.txt file = %d", assuntosCode.size()));
+
+				for (Assunto assunto : assuntosFomTempDb) {
+					if (assuntosCode.contains(assunto.getCodigo())) {
+						newAssuntosToImport.add(new AssuntoDecorator(assunto));
+					}
+				}				
+			} else {
+				for (Assunto assunto : assuntosFomTempDb) {
+					Optional<AssuntoTrf> assuntoTrf = assuntoTrfRepository.findFirstByCodAssuntoTrf(assunto.getCodigo());
+		
+					if (!assuntoTrf.isPresent()) {
+						//Add only if the "Assunto" is not in offical database.
+						newAssuntosToImport.add(new AssuntoDecorator(assunto));
+					}
 				}
 			}
+			isAllAssuntosIdentified = true;
+			generateAssuntoImportScripts(importConfig);
 		}
 	}
 
@@ -228,11 +236,18 @@ public class AssuntoService {
 		return pesoAssunto;
 	}
 
+	private void closeBlockScript(ImportConfig importConfig) {
+		StringBuilder sqlStmt = new StringBuilder();
+		sqlStmt.append("\nEND;\n");
+		sqlStmt.append("$$;\n");
+		FileUtil.writeIntoFile(importConfig.getSqlOutputFile(), importConfig.getCharset(), sqlStmt.toString());
+	}
+
 	private void generateUpdateHierarchyScript(ImportConfig importConfig) {
 		String template = FileUtil.getFileContentFromResource("sql_assunto_update_template.txt", importConfig.getCharset());
 		String codes = getSelectScript(false);
 		String sqlStmt = template.replace(AssuntoFields.CODIGOS, codes);
-		FileUtil.wrieteIntoFile(importConfig.getSqlOutputFile(), importConfig.getCharset(), sqlStmt);
+		FileUtil.writeIntoFile(importConfig.getSqlOutputFile(), importConfig.getCharset(), sqlStmt);
 	}
 
 	/*
@@ -254,7 +269,7 @@ public class AssuntoService {
 		sqlStmt.append(getSelectScript(true));
 		sqlStmt.append(String.format("\n --Total = %d \n", newAssuntosToImport.size()));
 		sqlStmt.append("\n */  \n");
-		FileUtil.wrieteIntoFile(importConfig.getSqlOutputFile(), importConfig.getCharset(), sqlStmt.toString());
+		FileUtil.writeIntoFile(importConfig.getSqlOutputFile(), importConfig.getCharset(), sqlStmt.toString());
 	}
 
 	private String getSelectScript(boolean isSimpleQuote) {
@@ -284,40 +299,60 @@ public class AssuntoService {
 		return sqlStmt.toString();
 	}
 
-	public void generateCsvFile() {
-		//TODO : not implemented
-		/*
-		if (importConfig.isToUseExcelFileAsFilter()) {
-			importFilterExcelIntoTempDatabase(importConfig);
-		}
-
-		if (importConfig.isToGenerateCsvFileWithDataToAnalyses()) {
-			generateOutputFileJustForAnalyses(importConfig);
-		}
-		*/
+	private boolean isRowWithNoValidContent(int rowCount, Row row) {
+		//It ignores the sheet header and rows with 'codigo' column blank
+		return rowCount < ExcelStructure.FIRST_ROW_OF_DATA || 
+			row.getCell(ExcelStructure.CODIGO_COLUMN).getNumericCellValue() == 0;
 	}
 
+	private String getCodigoAsString(double codigo) {
+		return String.valueOf(Math.round(codigo));
+	}
+
+	public void saveNewRecordsForAnalyses(ImportConfig importConfig) {
+		importFilterExcelIntoTempDatabase(importConfig);
+		List<String> codigosFromArray = getArrayOfCodesAsInput(importConfig);
+
+		for (String codigo : codigosFromArray) {
+			Optional<AssuntoAvaliado> assuntoAvaliado = this.assuntoAvaliadoRepository.findFirstByCodigo(codigo);
+
+			if (!assuntoAvaliado.isPresent()) {
+				Optional<Assunto> assunto = this.assuntoRepository.findFirstByCodigo(codigo);
+
+				if (assunto.isPresent()) {
+					AssuntoNaoAvaliado assuntoNaoAvaliado = assunto.get().getAssuntoNaoAvaliado(importConfig.getGrau());
+					assuntoNaoAvaliadoRepository.save(assuntoNaoAvaliado);
+				} else {
+					System.out.println(String.format("WARN: assunto [%s] not found for analysis.", codigo));
+				}
+			} else {
+				System.out.println(String.format("Assunto [%s] already analysied.", codigo));
+			}
+		}
+	}
 
 	@Transactional("sgtTransactionManager")
 	private void importFilterExcelIntoTempDatabase(ImportConfig importConfig) {
+		this.assuntoAvaliadoRepository.deleteAll();
+
 		String xlsFilterFile = importConfig.getXlsInputFilterFile();
 		System.out.println(String.format("\n\n\nImporting data filter from '%s' into sgt database...", xlsFilterFile));
 
 		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 		InputStream fis = classloader.getResourceAsStream(xlsFilterFile);
-		XSSFWorkbook wb = null; //HSSFWorkbook wb = null;
+		XSSFWorkbook wb = null;
 		int rowCount = 0;
 
 		try {
-			wb = new XSSFWorkbook(fis); //wb = new HSSFWorkbook(fis);
-			XSSFSheet sheet = wb.getSheetAt(0); //HSSFSheet sheet =  wb.getSheetAt(0);
+			wb = new XSSFWorkbook(fis);
+			XSSFSheet sheet = wb.getSheetAt(0);
 			Iterator<Row> rowIterator = sheet.iterator();
 
 			while (rowIterator.hasNext()) { 
 				Row row = rowIterator.next(); 
 				rowCount++;
 
-				if (isRowWithNoValidContent(rowCount, row)) {
+				if (rowCount < ExcelAvaliadoStructure.FIRST_ROW_OF_DATA) {
 					continue;
 				}
 				
@@ -368,46 +403,13 @@ public class AssuntoService {
 		}
 	}
 
-	private boolean isRowWithNoValidContent(int rowCount, Row row) {
-		//It ignores the sheet header and rows with 'codigo' column blank
-		return rowCount < ExcelStructure.FIRST_ROW_OF_DATA || 
-			row.getCell(ExcelStructure.CODIGO_COLUMN).getNumericCellValue() == 0;
+	private List<String> getArrayOfCodesAsInput(ImportConfig importConfig) {
+		String arrayOfAssuntos =  FileUtil.getFileContentFromResource("array_input.txt", importConfig.getCharset());
+		List<String> assuntosCode = Arrays.asList(arrayOfAssuntos
+			.replaceAll("'", "")
+			.replaceAll(" ", "")
+			.replaceAll("\n", "")
+			.split(","));
+		return assuntosCode;
 	}
-
-	private String getCodigoAsString(double codigo) {
-		return String.valueOf(Math.round(codigo));
-	}
-
-	@Transactional("pjeTransactionManager")
-	private void generateOutputFileJustForAnalyses(ImportConfig importConfig) {
-		/*
-		String csvFile = importConfig.getXlsInputFile();
-		Charset charset = importConfig.getCharset();
-		boolean isFilterActived = importConfig.isToUseDatabaseFilter();
-		StringBuffer csvContent = new StringBuffer();
-		String header = Assunto.getCsvHeader();
-		int count = 0;
-		List<Assunto> assuntosFomTempDb = assuntoRepository.findAll();
-
-		for (Assunto assunto : assuntosFomTempDb) {
-			Optional<AssuntoTrf> assuntoTrf = assuntoTrfRepository.findFirstByCodAssuntoTrf(assunto.getCodigo());
-
-			if (!assuntoTrf.isPresent()) {
-				if (isFilterActived) {
-					Optional<AssuntoAvaliado> assuntoFilter = this.assuntoAvaliadoRepository.findFirstByCodigo(assunto.getCodigo());
-					if (!assuntoFilter.isPresent()) {
-						csvContent.append(assunto).append("\n");
-						count++;
-					}
-				} else {
-					csvContent.append(assunto).append("\n");
-					count++;
-				}
-			}
-		}
-		CsvFileWritter.createFile(csvFile, charset, header, csvContent.toString());
-		System.out.println(String.format("\n\n\nNumber of new assuntos: %d\n\n\n", count));
-		*/
-	}
-
 }

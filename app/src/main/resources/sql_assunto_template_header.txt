@@ -1,0 +1,17 @@
+--This is a script to import new 'Assuntos' from CNJ's Excel.
+
+DO $$
+DECLARE
+    v_glossario TEXT;
+    v_in_mantem_processo BOOLEAN := true; --Guarda permanente
+    v_in_ignora_compensacao BOOLEAN := true; --Provoca compensação
+    v_in_complementar BOOLEAN := false; --Complementar
+    v_in_segredo_justica BOOLEAN := false; --Sigiloso?
+    v_in_crime_antecedente BOOLEAN := false; --Exige assunto antecedente?
+    v_in_ativo BOOLEAN := true; --Situacao
+    v_in_ignora_prevencao BOOLEAN := false; --Ignora prevencao
+    v_in_exige_nm BOOLEAN := false; --Exige mes de cáculo do credito?
+    v_in_pss BOOLEAN := false; --Tem efeito sobre a previdencia do servidor?
+    v_peso INT := ${valorPeso};
+
+BEGIN

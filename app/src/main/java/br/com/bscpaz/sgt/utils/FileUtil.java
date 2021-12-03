@@ -27,6 +27,7 @@ public class FileUtil {
 
 			fos = new FileOutputStream(file);
 			osw = new OutputStreamWriter(fos, charset);
+			
 			writer = new BufferedWriter(osw);
 			writer.write(content);
 			writer.flush();
@@ -51,7 +52,7 @@ public class FileUtil {
 		return result;
 	}
 
-	public static boolean wrieteIntoFile (String fileName, Charset charset, String content) {
+	public static boolean writeIntoFile (String fileName, Charset charset, String content) {
 		boolean result = true;
 		FileOutputStream fos = null;
 		OutputStreamWriter osw = null;
@@ -62,6 +63,7 @@ public class FileUtil {
 			File file = new File(fileName);
 			fos = new FileOutputStream(file, toAppend);
 			osw = new OutputStreamWriter(fos, charset);
+			
 			writer = new BufferedWriter(osw);
 			writer.write(content);
 			writer.flush();
@@ -96,6 +98,7 @@ public class FileUtil {
 			ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 			inputStream = classloader.getResourceAsStream(fileFromResource);
 			streamReader = new InputStreamReader(inputStream, charset);
+			
 			reader = new BufferedReader(streamReader);
 		
 			for (String line; (line = reader.readLine()) != null;) {

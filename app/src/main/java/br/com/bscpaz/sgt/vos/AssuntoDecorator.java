@@ -22,7 +22,7 @@ public class AssuntoDecorator {
 		return "''" + this.assunto.getCodigo() + "''"; 
 	}
 
-	public String getSqlStmt(String template, int valorPeso) {
-		return this.assunto.getSqlStmt(template, valorPeso);
+	public String getSqlStmt(String template,int current, int total) {
+		return this.assunto.getSqlStmt(template, current, total);
 	}
 }

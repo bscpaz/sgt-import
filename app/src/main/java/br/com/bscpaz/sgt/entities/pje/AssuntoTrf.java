@@ -70,23 +70,45 @@ public class AssuntoTrf {
 	@Column(name = "in_possui_filhos")
 	private Boolean possuiFilhos = Boolean.FALSE;
 
-	@Column(name = "in_ativo", nullable = false)
-	private Boolean ativo = Boolean.TRUE;
-
-	@Column(name = "in_pss", nullable = false)
-	private Boolean pss = Boolean.FALSE;
-
-	@Column(name = "in_exige_nm", nullable = false)
-	private boolean inExigeNM = Boolean.FALSE;
-
-	@Column(name = "in_crime_antecedente", nullable = false)
-	private Boolean exigeAssuntoAntecedente = Boolean.FALSE;
-
 	@Column(name="in_padrao_sgt", nullable = false)
 	private Boolean padraoSgt = Boolean.FALSE;
 
+	//Guarda permanente
+	@Column(name = "in_mantem_processo")
+	private Boolean mantemProcesso = Boolean.TRUE;
 
+	//Provoca compensação
+	@Column(name = "in_ignora_compensacao")
+	private Boolean ignoraCompensacao = Boolean.TRUE;
+
+	//Complementar
+	@Column(name = "in_complementar")
+	private Boolean complementar = Boolean.FALSE;
 	
+	//Sigiloso?
+	@Column(name = "in_segredo_justica")
+	private Boolean segredoJustica = Boolean.FALSE;
+
+	//Exige assunto antecedente?
+	@Column(name = "in_crime_antecedente", nullable = false)
+	private Boolean exigeAssuntoAntecedente = Boolean.FALSE;
+
+	//Situação
+	@Column(name = "in_ativo", nullable = false)
+	private Boolean ativo = Boolean.TRUE;
+
+	//Ignora prevenção
+	@Column(name = "in_ignora_prevencao")
+	private Boolean ignoraPrevencao = Boolean.FALSE;
+
+	//Exige mês de cáculo do crédito?
+	@Column(name = "in_exige_nm", nullable = false)
+	private boolean inExigeNM = Boolean.FALSE;
+
+	//Tem efeito sobre a previdência do servidor?
+	@Column(name = "in_pss", nullable = false)
+	private Boolean pss = Boolean.FALSE;
+
 	public Integer getIdAssuntoTrf() {
 		return idAssuntoTrf;
 	}
@@ -183,28 +205,44 @@ public class AssuntoTrf {
 		this.possuiFilhos = possuiFilhos;
 	}
 
-	public Boolean getAtivo() {
-		return ativo;
+	public Boolean getPadraoSgt() {
+		return padraoSgt;
 	}
 
-	public void setAtivo(Boolean ativo) {
-		this.ativo = ativo;
+	public void setPadraoSgt(Boolean padraoSgt) {
+		this.padraoSgt = padraoSgt;
 	}
 
-	public Boolean getPss() {
-		return pss;
+	public Boolean getMantemProcesso() {
+		return mantemProcesso;
 	}
 
-	public void setPss(Boolean pss) {
-		this.pss = pss;
+	public void setMantemProcesso(Boolean mantemProcesso) {
+		this.mantemProcesso = mantemProcesso;
 	}
 
-	public boolean isInExigeNM() {
-		return inExigeNM;
+	public Boolean getIgnoraCompensacao() {
+		return ignoraCompensacao;
 	}
 
-	public void setInExigeNM(boolean inExigeNM) {
-		this.inExigeNM = inExigeNM;
+	public void setIgnoraCompensacao(Boolean ignoraCompensacao) {
+		this.ignoraCompensacao = ignoraCompensacao;
+	}
+
+	public Boolean getComplementar() {
+		return complementar;
+	}
+
+	public void setComplementar(Boolean complementar) {
+		this.complementar = complementar;
+	}
+
+	public Boolean getSegredoJustica() {
+		return segredoJustica;
+	}
+
+	public void setSegredoJustica(Boolean segredoJustica) {
+		this.segredoJustica = segredoJustica;
 	}
 
 	public Boolean getExigeAssuntoAntecedente() {
@@ -215,12 +253,36 @@ public class AssuntoTrf {
 		this.exigeAssuntoAntecedente = exigeAssuntoAntecedente;
 	}
 
-	public Boolean getPadraoSgt() {
-		return padraoSgt;
+	public Boolean getAtivo() {
+		return ativo;
 	}
 
-	public void setPadraoSgt(Boolean padraoSgt) {
-		this.padraoSgt = padraoSgt;
+	public void setAtivo(Boolean ativo) {
+		this.ativo = ativo;
+	}
+
+	public Boolean getIgnoraPrevencao() {
+		return ignoraPrevencao;
+	}
+
+	public void setIgnoraPrevencao(Boolean ignoraPrevencao) {
+		this.ignoraPrevencao = ignoraPrevencao;
+	}
+
+	public boolean isInExigeNM() {
+		return inExigeNM;
+	}
+
+	public void setInExigeNM(boolean inExigeNM) {
+		this.inExigeNM = inExigeNM;
+	}
+
+	public Boolean getPss() {
+		return pss;
+	}
+
+	public void setPss(Boolean pss) {
+		this.pss = pss;
 	}
 
 	@Override

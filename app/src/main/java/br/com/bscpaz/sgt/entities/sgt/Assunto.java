@@ -21,13 +21,13 @@ public class Assunto {
 	@Column(name = "cd_assunto_trf_superior")
 	private String codigoSuperior;
 
-	@Column(name = "ds_assunto_trf", nullable = false)
+	@Column(name = "ds_assunto_trf", nullable = false, length = 200)
 	private String assunto;
 
 	@Column(name = "ds_assunto_completo", nullable = false)
 	private String assuntoCompleto;
 
-	@Column(name = "ds_norma")
+	@Column(name = "ds_norma", length = 200)
 	private String norma;
 
 	@Column(name = "ds_lei_artigo")
@@ -36,7 +36,7 @@ public class Assunto {
 	@Column(name = "ds_assunto_trf_glossario")
 	private String glossario;
 
-	@Column(name = "ds_alteracoes")
+	@Column(name = "ds_alteracoes", length = 200)
 	private String alteracoes;	
 	
 	@Column(name = "in_riscado")
@@ -69,7 +69,15 @@ public class Assunto {
 	}
 
 	public void setAssunto(String assunto) {
-		this.assunto = assunto;
+		if (assunto != null) {
+			if (assunto.length() <= 200) {
+				this.assunto = assunto;
+			} else {
+				System.out.println(
+					String.format("ERROR: 'assunto' field has more then 200 characteres for Assunto = [%s].\nValue = %s", 
+					this.codigo, assunto));
+			}
+		}		
 	}
 
 	public String getAssuntoCompleto() {
@@ -85,7 +93,15 @@ public class Assunto {
 	}
 
 	public void setNorma(String norma) {
-		this.norma = norma;
+		if (norma != null) {
+			if (norma.length() <= 200) {
+				this.norma = norma;
+			} else {
+				System.out.println(
+					String.format("WARN: 'norma' field has more then 200 characteres for Assunto = [%s]. It will be a null value.", 
+					this.codigo));
+			}
+		}
 	}
 
 	public String getArtigo() {
@@ -109,7 +125,15 @@ public class Assunto {
 	}
 
 	public void setAlteracoes(String alteracoes) {
-		this.alteracoes = alteracoes;
+		if (alteracoes != null) {
+			if (alteracoes.length() <= 200) {
+				this.alteracoes = alteracoes;
+			} else {
+				System.out.println(
+					String.format("WARN: 'alteracoes' field has more then 200 characteres for Assunto = [%s]. It will be a null value.", 
+					this.codigo));
+			}
+		}
 	}
 
 	public Boolean getRiscado() {
@@ -136,12 +160,75 @@ public class Assunto {
 		this.importado = importado;
 	}
 
+	public AssuntoNaoAvaliado getAssuntoNaoAvaliado(Integer grau) {
+		AssuntoNaoAvaliado assuntoNaoAvaliado = new AssuntoNaoAvaliado();
+		assuntoNaoAvaliado.setCodigo(this.codigo);
+		assuntoNaoAvaliado.setCodigoSuperior(this.codigoSuperior);
+		assuntoNaoAvaliado.setAssunto(this.assunto);
+		assuntoNaoAvaliado.setAlteracoes(this.alteracoes);
+		assuntoNaoAvaliado.setArtigo(this.artigo);
+		assuntoNaoAvaliado.setAssuntoCompleto(this.assuntoCompleto);
+		assuntoNaoAvaliado.setGlossario(this.glossario);
+		assuntoNaoAvaliado.setNorma(this.norma);
+		assuntoNaoAvaliado.setGrau(grau);
+		return assuntoNaoAvaliado;
+	}
+
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((codigo == null) ? 0 : codigo.hashCode());
 		return result;
+	}
+
+	public String getSqlStmt(String template, int current, int total) {
+		template = template.replace(AssuntoFields.CURRENT, String.valueOf(current));
+		template = template.replace(AssuntoFields.TOTAL, String.valueOf(total));
+		template = template.replace(AssuntoFields.CODIGO, "'" + this.codigo + "'");
+
+		if (this.codigoSuperior == null) {
+			template = template.replace(AssuntoFields.CODIGO_SUP, "null");
+		} else {
+			template = template.replace(AssuntoFields.CODIGO_SUP, "'" + this.codigoSuperior + "'");
+		}
+
+		template = template.replace(AssuntoFields.ASSUNTO, "'" + this.assunto + "'");
+		template = template.replace(AssuntoFields.ASSUNTO_COMPLETO, "'" + this.assuntoCompleto + "'");
+
+		if (this.norma == null) {
+			template = template.replace(AssuntoFields.NORMA, "null");
+			template = template.replace(AssuntoFields.LEI, "null"); //LEI is the same as NORMA.
+		} else {
+			if (this.norma.length() <= 200) {
+				template = template.replace(AssuntoFields.NORMA, "'" + this.norma + "'");
+				template = template.replace(AssuntoFields.LEI, "'" + this.norma + "'"); //LEI is the same as NORMA.
+			} else {
+				template = template.replace(AssuntoFields.NORMA, "null");
+				template = template.replace(AssuntoFields.LEI, "null"); //LEI is the same as NORMA.
+			}
+		}
+
+		if (this.artigo == null) {
+			template = template.replace(AssuntoFields.ARTIGO, "null");
+		} else {
+			template = template.replace(AssuntoFields.ARTIGO, "'" + this.artigo + "'");
+		}
+
+		template = template.replace(AssuntoFields.ARTIGO, "'" + this.artigo + "'");
+
+		if (this.glossario == null) {
+			template = template.replace(AssuntoFields.GLOSSARIO, "null");
+		} else {
+			template = template.replace(AssuntoFields.GLOSSARIO, "'" + this.glossario + "'");
+		}
+		template = template + "\n--=======================================================\n\n";
+		return template.toString();
+	}
+
+	public static String getCsvHeader() {
+		return "cod_assunto;assunto;cod_assunto_sup;assunto_completo";
 	}
 
 	@Override
@@ -165,47 +252,4 @@ public class Assunto {
 	public String toString() {
 		return codigo + ";" + assunto + ";" + codigoSuperior + ";" + assuntoCompleto; 
 	}
-
-	public String getSqlStmt(String template, int valorPeso) {
-		template = template.replace(AssuntoFields.CODIGO, "'" + this.codigo + "'");
-
-		if (this.codigoSuperior == null) {
-			template = template.replace(AssuntoFields.CODIGO_SUP, "null");
-		} else {
-			template = template.replace(AssuntoFields.CODIGO_SUP, "'" + this.codigoSuperior + "'");
-		}
-
-		template = template.replace(AssuntoFields.ASSUNTO, "'" + this.assunto + "'");
-		template = template.replace(AssuntoFields.ASSUNTO_COMPLETO, "'" + this.assuntoCompleto + "'");
-		template = template.replace(AssuntoFields.VL_PESO, String.valueOf(valorPeso));
-
-		if (this.norma == null) {
-			template = template.replace(AssuntoFields.NORMA, "null");
-			template = template.replace(AssuntoFields.LEI, "null"); //LEI is the same as NORMA.
-		} else {
-			template = template.replace(AssuntoFields.NORMA, "'" + this.norma + "'");
-			template = template.replace(AssuntoFields.LEI, "'" + this.norma + "'"); //LEI is the same as NORMA.
-		}
-
-		template = template.replace(AssuntoFields.ARTIGO, "'" + this.artigo + "'");
-		template = template.replace(AssuntoFields.POSSUI_FILHOS, String.valueOf(this.possuiFilhos));
-		template = template.replace(AssuntoFields.ATIVO, "false");
-		template = template.replace(AssuntoFields.PSS, "false");
-		template = template.replace(AssuntoFields.EXIGE_NM, "false");
-		template = template.replace(AssuntoFields.EXIGE_ASSUNTOS_ANTECEDENTES, "false");
-		template = template.replace(AssuntoFields.PADRAO_SGT, "true");
-
-		if (this.glossario == null) {
-			template = template.replace(AssuntoFields.GLOSSARIO, "null");
-		} else {
-			template = template.replace(AssuntoFields.GLOSSARIO, "'" + this.glossario + "'");
-		}
-		template = template + "\n--=======================================================\n\n";
-		return template.toString();
-	}
-
-	public static String getCsvHeader() {
-		return "cod_assunto;assunto;cod_assunto_sup;assunto_completo";
-	}
-
 }

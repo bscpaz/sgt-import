@@ -10,25 +10,28 @@ BEGIN
     OPEN v_cursor FOR EXECUTE v_query;
     LOOP FETCH v_cursor INTO v_row;
     EXIT WHEN NOT FOUND;
-		
-   		RAISE NOTICE 'Processing "Assunto" [%] with father [%]', 
-   			v_row.cd_assunto_trf, 
-   			v_row.cd_assunto_trf_superior;
-   
-   		IF (v_row.cd_assunto_trf_superior is not null) THEN
-   			SELECT id_assunto_trf INTO v_id_assunto_trf_father
-   			FROM client.tb_assunto_trf
-   			WHERE cd_assunto_trf = v_row.cd_assunto_trf_superior;
-   		
-	   		RAISE NOTICE 'Updating tb_assunto_trf [id = % (%)] with father [id = % (%)]...', 
-	   			v_row.id_assunto_trf,
-	   			v_row.cd_assunto_trf,
-   				v_id_assunto_trf_father,
-	   			v_row.cd_assunto_trf_superior;
-   		
-   			UPDATE client.tb_assunto_trf
-   			SET id_assunto_trf_superior = v_id_assunto_trf_father
-   			WHERE id_assunto_trf = v_row.id_assunto_trf;
+
+        RAISE NOTICE 'Processing "Assunto" [%] with father [%]', 
+            v_row.cd_assunto_trf, 
+            v_row.cd_assunto_trf_superior;
+
+        IF (v_row.cd_assunto_trf_superior is not null) THEN
+            SELECT id_assunto_trf INTO v_id_assunto_trf_father
+            FROM client.tb_assunto_trf
+            WHERE cd_assunto_trf = v_row.cd_assunto_trf_superior;
+
+            RAISE NOTICE 'Updating tb_assunto_trf [id = % (%)] with father [id = % (%)]...', 
+                v_row.id_assunto_trf,
+                v_row.cd_assunto_trf,
+                v_id_assunto_trf_father,
+                v_row.cd_assunto_trf_superior;
+
+            UPDATE client.tb_assunto_trf
+            SET id_assunto_trf_superior = v_id_assunto_trf_father
+            WHERE id_assunto_trf = v_row.id_assunto_trf;
+
+            COMMIT;
+
         END IF;
     END LOOP;
 
