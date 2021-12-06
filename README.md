@@ -2,7 +2,7 @@
 <p align="center">This is a Java project that imports data from a Excel file.</p>
 
 ### Objective:
-<p>Create a Spring Boot project that reads a Excel file (SGT/CNJ) and import all data (e.g. motions data) into a Postgres database.</p>
+<p>Create a Spring Boot project that reads a Excel file (SGT/CNJ) and import all data (e.g. motions data) into a Postgres database and generate load data scripts and/or reports.</p>
 
 ### SGT/CNJ file:
 https://www.cnj.jus.br/sgt/versoes.php?tipo_tabela=A
