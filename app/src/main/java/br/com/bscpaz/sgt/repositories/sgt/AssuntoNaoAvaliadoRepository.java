@@ -1,7 +1,5 @@
 package br.com.bscpaz.sgt.repositories.sgt;
 
-import javax.print.DocFlavor.STRING;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
