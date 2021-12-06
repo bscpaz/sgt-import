@@ -30,8 +30,6 @@ BEGIN
             SET id_assunto_trf_superior = v_id_assunto_trf_father
             WHERE id_assunto_trf = v_row.id_assunto_trf;
 
-            COMMIT;
-
         END IF;
     END LOOP;
 

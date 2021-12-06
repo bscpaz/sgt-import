@@ -11,7 +11,7 @@ public class ImportConfig {
 	private boolean skipXlsInputFile = false;
 
 	//Indicates to use a SELECT as source. See array_filter.txt.
-	private boolean isToUseArrayFileAsInput = false;
+	private boolean isToUseArrayFileAsFilter = false;
 
 	//Charset of output file
 	private Charset charset = null;
@@ -35,10 +35,6 @@ public class ImportConfig {
 
 	public String getXlsInputFilterFile() {
 		return Constants.XLS_FILTER_FILE;
-	}
-
-	public String getCsvOutputFile() {
-		return Constants.CSV_OUTPUT_FILE;
 	}
 
 	public Charset getCharset() {
@@ -84,12 +80,16 @@ public class ImportConfig {
 		this.skipXlsInputFile = skipXlsInputFile;
 	}
 
-	public boolean isToUseArrayFileAsInput() {
-		return isToUseArrayFileAsInput;
+	public boolean isToUseArrayFileAsFilter() {
+		return isToUseArrayFileAsFilter;
 	}
 
-	public void setToUseArrayFileAsInput(boolean isToUseArrayFileAsInput) {
-		this.isToUseArrayFileAsInput = isToUseArrayFileAsInput;
+	public void setToUseArrayFileAsFilter(boolean isToUseArrayFileAsFilter) {
+		this.isToUseArrayFileAsFilter = isToUseArrayFileAsFilter;
 	}
 
+
+	public String getTxtInputCodesFile() {
+		return Constants.TXT_INPUT_CODES_FILE;
+	}
 }

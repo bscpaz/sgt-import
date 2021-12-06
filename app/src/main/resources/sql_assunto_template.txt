@@ -45,5 +45,4 @@
         v_in_ignora_prevencao,
         v_in_exige_nm,
         v_in_pss);
-    
-    COMMIT;
+

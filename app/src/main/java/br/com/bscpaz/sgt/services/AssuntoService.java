@@ -1,5 +1,6 @@
 package br.com.bscpaz.sgt.services;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import br.com.bscpaz.sgt.entities.sgt.AssuntoAvaliado;
 import br.com.bscpaz.sgt.entities.sgt.AssuntoNaoAvaliado;
 import br.com.bscpaz.sgt.repositories.pje.AssuntoTrfRepository;
 import br.com.bscpaz.sgt.repositories.sgt.AssuntoAvaliadoRepository;
+import br.com.bscpaz.sgt.repositories.sgt.AssuntoCargaRepository;
 import br.com.bscpaz.sgt.repositories.sgt.AssuntoNaoAvaliadoRepository;
 import br.com.bscpaz.sgt.repositories.sgt.AssuntoRepository;
 import br.com.bscpaz.sgt.utils.ExcelAvaliadoStructure;
@@ -38,7 +40,6 @@ import br.com.bscpaz.sgt.vos.ImportConfig;
 public class AssuntoService {
 
 	private List<AssuntoDecorator> newAssuntosToImport = new ArrayList<>();
-	private List<Assunto> newAssuntosToAnalysis = new ArrayList<>();
 
 	@Autowired
 	private AssuntoRepository assuntoRepository;
@@ -52,7 +53,8 @@ public class AssuntoService {
 	@Autowired
 	private AssuntoTrfRepository assuntoTrfRepository;
 
-	private boolean isAllAssuntosIdentified = false;
+	@Autowired
+	private AssuntoCargaRepository assuntoCargaRepository; 
 
 	public void doImport(ImportConfig importConfig) {
 		if (!importConfig.isSkipXlsInputFile()) {
@@ -68,15 +70,14 @@ public class AssuntoService {
 
 		this.assuntoRepository.deleteAll();
 
-		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-		InputStream fis = classloader.getResourceAsStream(xlsFile);
-		XSSFWorkbook wb = null; //HSSFWorkbook wb = null;
+		XSSFWorkbook wb = null;
 		int rowCount = 0;
 		boolean isChildNode = false;
-
+		
 		try {
-			wb = new XSSFWorkbook(fis); //wb = new HSSFWorkbook(fis);
-			XSSFSheet sheet = wb.getSheetAt(0); //HSSFSheet sheet =  wb.getSheetAt(0);
+			InputStream fis =  new FileInputStream(xlsFile);
+			wb = new XSSFWorkbook(fis);
+			XSSFSheet sheet = wb.getSheetAt(0);
 			Iterator<Row> rowIterator = sheet.iterator();
 			HierarchicalDescription hierarchicalDescription = new HierarchicalDescription();
 			int assuntoArrayIndex = 0;
@@ -176,6 +177,7 @@ public class AssuntoService {
 
 	private void generateImportSqlFile(ImportConfig importConfig) {
 		openBlockScript(importConfig);
+		loadDataToImport(importConfig);
 		generateAssuntoImportScripts(importConfig);
 		closeBlockScript(importConfig);
 		generateUpdateHierarchyScript(importConfig);
@@ -189,41 +191,45 @@ public class AssuntoService {
 		FileUtil.createFile(importConfig.getSqlOutputFile(), importConfig.getCharset(), headerTemplate);
 	}
 
-	private void generateAssuntoImportScripts(ImportConfig importConfig) {
-		if (isAllAssuntosIdentified) {
-			String template = FileUtil.getFileContentFromResource("sql_assunto_template.txt", importConfig.getCharset());
-			int current = 1;
+	private void loadDataToImport(ImportConfig importConfig) {
+		this.assuntoCargaRepository.deleteAll();
 
-			for (AssuntoDecorator assunto : newAssuntosToImport) {
-				System.out.println(String.format("adding assunto [%s] into file...", assunto.getCodigo()));
-				String sqlStmt = assunto.getSqlStmt(template, current, newAssuntosToImport.size());
-				FileUtil.writeIntoFile(importConfig.getSqlOutputFile(), importConfig.getCharset(), sqlStmt.toString());
-				current++;
-			}
+		if (importConfig.isToUseArrayFileAsFilter()) {
+			List<String> codigos = getArrayOfCodesAsInput(importConfig);
+			System.out.println(String.format("Total found in %s file = %d", importConfig.getTxtInputCodesFile(), codigos.size()));
+			
+			for (String codigo : codigos) {
+				Optional<Assunto> assunto = this.assuntoRepository.findFirstByCodigo(codigo);
+
+				if (assunto.isPresent()) {
+					newAssuntosToImport.add(new AssuntoDecorator(assunto.get()));
+					this.assuntoCargaRepository.save(assunto.get().getAssuntoCarga(importConfig.getGrau()));
+				}
+			}				
 		} else {
 			List<Assunto> assuntosFomTempDb = assuntoRepository.findAll();
 
-			if (importConfig.isToUseArrayFileAsInput()) {
-				List<String> assuntosCode =	getArrayOfCodesAsInput(importConfig);
-				System.out.println(String.format("Total found in array_filter.txt file = %d", assuntosCode.size()));
-
-				for (Assunto assunto : assuntosFomTempDb) {
-					if (assuntosCode.contains(assunto.getCodigo())) {
-						newAssuntosToImport.add(new AssuntoDecorator(assunto));
-					}
-				}				
-			} else {
-				for (Assunto assunto : assuntosFomTempDb) {
-					Optional<AssuntoTrf> assuntoTrf = assuntoTrfRepository.findFirstByCodAssuntoTrf(assunto.getCodigo());
-		
-					if (!assuntoTrf.isPresent()) {
-						//Add only if the "Assunto" is not in offical database.
-						newAssuntosToImport.add(new AssuntoDecorator(assunto));
-					}
+			for (Assunto assunto : assuntosFomTempDb) {
+				Optional<AssuntoTrf> assuntoTrf = assuntoTrfRepository.findFirstByCodAssuntoTrf(assunto.getCodigo());
+	
+				if (!assuntoTrf.isPresent()) {
+					//Add only if the "Assunto" is not in offical database.
+					newAssuntosToImport.add(new AssuntoDecorator(assunto));
+					this.assuntoCargaRepository.save(assunto.getAssuntoCarga(importConfig.getGrau()));
 				}
 			}
-			isAllAssuntosIdentified = true;
-			generateAssuntoImportScripts(importConfig);
+		}
+	}
+
+	private void generateAssuntoImportScripts(ImportConfig importConfig) {
+		String template = FileUtil.getFileContentFromResource("sql_assunto_template.txt", importConfig.getCharset());
+		int current = 1;
+
+		for (AssuntoDecorator assunto : newAssuntosToImport) {
+			System.out.println(String.format("adding assunto [%s] into file...", assunto.getCodigo()));
+			String sqlStmt = assunto.getSqlStmt(template, current, newAssuntosToImport.size());
+			FileUtil.writeIntoFile(importConfig.getSqlOutputFile(), importConfig.getCharset(), sqlStmt.toString());
+			current++;
 		}
 	}
 
@@ -338,12 +344,11 @@ public class AssuntoService {
 		String xlsFilterFile = importConfig.getXlsInputFilterFile();
 		System.out.println(String.format("\n\n\nImporting data filter from '%s' into sgt database...", xlsFilterFile));
 
-		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-		InputStream fis = classloader.getResourceAsStream(xlsFilterFile);
 		XSSFWorkbook wb = null;
 		int rowCount = 0;
-
+		
 		try {
+			InputStream fis = new FileInputStream(xlsFilterFile);
 			wb = new XSSFWorkbook(fis);
 			XSSFSheet sheet = wb.getSheetAt(0);
 			Iterator<Row> rowIterator = sheet.iterator();
@@ -404,7 +409,7 @@ public class AssuntoService {
 	}
 
 	private List<String> getArrayOfCodesAsInput(ImportConfig importConfig) {
-		String arrayOfAssuntos =  FileUtil.getFileContentFromResource("array_input.txt", importConfig.getCharset());
+		String arrayOfAssuntos =  FileUtil.getFileContentFromPath(importConfig.getTxtInputCodesFile(), importConfig.getCharset());
 		List<String> assuntosCode = Arrays.asList(arrayOfAssuntos
 			.replaceAll("'", "")
 			.replaceAll(" ", "")

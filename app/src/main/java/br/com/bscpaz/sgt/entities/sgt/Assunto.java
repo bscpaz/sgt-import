@@ -174,6 +174,19 @@ public class Assunto {
 		return assuntoNaoAvaliado;
 	}
 
+	public AssuntoCarga getAssuntoCarga(Integer grau) {
+		AssuntoCarga assuntoCarga = new AssuntoCarga();
+		assuntoCarga.setCodigo(this.codigo);
+		assuntoCarga.setCodigoSuperior(this.codigoSuperior);
+		assuntoCarga.setAssunto(this.assunto);
+		assuntoCarga.setAlteracoes(this.alteracoes);
+		assuntoCarga.setArtigo(this.artigo);
+		assuntoCarga.setAssuntoCompleto(this.assuntoCompleto);
+		assuntoCarga.setGlossario(this.glossario);
+		assuntoCarga.setNorma(this.norma);
+		assuntoCarga.setGrau(grau);
+		return assuntoCarga;
+	}
 
 	@Override
 	public int hashCode() {

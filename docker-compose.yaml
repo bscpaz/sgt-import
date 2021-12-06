@@ -18,19 +18,27 @@ services:
     ports:
       - 5432:5432
 
-  # sgt-app:
-  #   container_name: sgt-app
-  #   build:
-  #     context: app
-  #     dockerfile: Dockerfile
-  #   image: bscpaz/sgt-app
-  #   volumes:
-  #     - "$HOME/.m2:/root/.m2"
-  #   networks:
-  #     - sgt-network
-  #   depends_on:
-  #     - sgt-db
+  sgt-app:
+    container_name: sgt-app
+    build:
+      context: app
+      dockerfile: Dockerfile
+    image: bscpaz/sgt-app
+    volumes:
+      - "$HOME/.m2:/root/.m2"
+      - /mnt/d/pje/scripts/assuntos:/volume/sgt
+    environment:
+      - ENV_GRAU=2 # int = 1 or 2
+      - ENV_SKIP_EXCEL_IMPORT=true # boolean
+      - ENV_USE_ARRAY_AS_FILTER=true # boolean
+      - ENV_REPORT_MODE_ENABLED=false # boolean
+    env_file:
+      - "$HOME/.config/sgt-app"        
+    networks:
+      - sgt-network
+    depends_on:
+      - sgt-db
 
 networks:
   sgt-network:
-    driver: bridge
+    driver: bridge  

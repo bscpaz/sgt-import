@@ -3,6 +3,8 @@ package br.com.bscpaz.sgt.utils;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -89,16 +91,51 @@ public class FileUtil {
 	}
 
 	public static String getFileContentFromResource(String fileFromResource, Charset charset) {
-		StringBuilder fileContent = new StringBuilder();
 		InputStream inputStream = null;
-		InputStreamReader streamReader = null;
-		BufferedReader reader = null;
 		
 		try {
 			ClassLoader classloader = Thread.currentThread().getContextClassLoader();
 			inputStream = classloader.getResourceAsStream(fileFromResource);
+			return getFileContent(inputStream, charset);
+		} finally {
+			try {
+				if (inputStream != null) {
+					inputStream.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static String getFileContentFromPath(String fileFromPath, Charset charset) {
+		String fileContent = null;
+		InputStream inputStream = null;
+		
+		try {
+			inputStream = new FileInputStream(fileFromPath);
+			fileContent = getFileContent(inputStream, charset);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (inputStream != null) {
+					inputStream.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return fileContent;
+	}	
+	
+	private static String getFileContent(InputStream inputStream, Charset charset) {
+		StringBuilder fileContent = new StringBuilder();
+		InputStreamReader streamReader = null;
+		BufferedReader reader = null;
+		
+		try {
 			streamReader = new InputStreamReader(inputStream, charset);
-			
 			reader = new BufferedReader(streamReader);
 		
 			for (String line; (line = reader.readLine()) != null;) {
@@ -109,9 +146,6 @@ public class FileUtil {
 			fileContent = new StringBuilder();
 		} finally {
 			try {
-				if (inputStream != null) {
-					inputStream.close();
-				}
 				if (streamReader != null) {
 					streamReader.close();
 				}
@@ -123,5 +157,5 @@ public class FileUtil {
 			}
 		}
 		return fileContent.toString();
-	}	
+	}
 }

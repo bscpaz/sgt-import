@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -14,28 +15,36 @@ import br.com.bscpaz.sgt.vos.ImportConfig;
 @SpringBootApplication
 public class SgtApplication {
 
-	private static final int GRAU = 2; //<<< GHANGE THIS VARIABLE AND DATASOURCE TOO.
-	private static final boolean SKIP_EXCEL_IMPORT = true;
-	private static final boolean USE_ARRAY_AS_FILTER = true;
-	private static final boolean LOAD_NEW_DATA_FOR_BUSSINES_AREA = true;
+	@Value("${ENV_GRAU}")
+	private int grau;
+
+	@Value("${ENV_SKIP_EXCEL_IMPORT}")
+	private boolean isSkipExcelImport;
+
+	@Value("${ENV_USE_ARRAY_AS_FILTER}")
+	private boolean isToUseArrayAsFilter;
+
+	@Value("${ENV_REPORT_MODE_ENABLED}")
+	private boolean isReportModeEnabled;
 
 	@Autowired
 	private AssuntoService assuntoService;
 
 	public static void main(String[] args) {
-		System.out.println(String.format("\n\n\n\nImporting assuntos for grau '%d'...\n\n", GRAU));
 		SpringApplication.run(SgtApplication.class, args);
 		System.out.println("\n\n\nMission accomplished!\n\n");
 	}
-
+	
 	@PostConstruct
 	public void importFile() {
-		ImportConfig importConfig = new ImportConfig(GRAU);
-		importConfig.setCharset(StandardCharsets.ISO_8859_1);
-		importConfig.setSkipXlsInputFile(SKIP_EXCEL_IMPORT);
-		importConfig.setToUseArrayFileAsInput(USE_ARRAY_AS_FILTER);
+		System.out.println(String.format("\n\n\n\nImporting assuntos for grau '%d'...\n\n", this.grau));
 
-		if (LOAD_NEW_DATA_FOR_BUSSINES_AREA) {
+		ImportConfig importConfig = new ImportConfig(this.grau);
+		importConfig.setCharset(StandardCharsets.ISO_8859_1);
+		importConfig.setSkipXlsInputFile(this.isSkipExcelImport);
+		importConfig.setToUseArrayFileAsFilter(this.isToUseArrayAsFilter);
+
+		if (this.isReportModeEnabled) {
 			this.assuntoService.saveNewRecordsForAnalyses(importConfig);
 		} else {
 			this.assuntoService.doImport(importConfig);
