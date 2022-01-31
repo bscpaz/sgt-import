@@ -18,6 +18,11 @@ Enter new password: <new-password>
 postgres=# \q
 ```
 
+### Visual Studio worksapce
+```console
+Open remote project [WSL:Ubuntu-18.04] in "/home/tr***/workspace/sgt-import" path
+```
+
 <hr>
 <h4 align="center">Known issues</h4>
 
