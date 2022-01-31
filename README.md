@@ -23,6 +23,11 @@ postgres=# \q
 Open remote project [WSL:Ubuntu-18.04] in "/home/tr***/workspace/sgt-import" path
 ```
 
+### Database start
+```console
+bscpaz@2am:/$ docker start sgt-db
+```
+
 <hr>
 <h4 align="center">Known issues</h4>
 
